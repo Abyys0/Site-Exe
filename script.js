@@ -625,11 +625,18 @@ async function logout() {
     }
 }
 
-// Executar ao carregar
+// Executar ao carregar - APENAS na página principal
 document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(checkUserLogin, 500);
+    // Verificar se estamos na página index.html antes de chamar checkUserLogin
+    if (document.getElementById('userInfo') && document.getElementById('guestButtons')) {
+        setTimeout(checkUserLogin, 500);
+    }
 });
-document.head.appendChild(rainbowStyle);
+
+// Adicionar estilo rainbow apenas se a variável foi definida
+if (typeof rainbowStyle !== 'undefined') {
+    document.head.appendChild(rainbowStyle);
+}
 
 // ==========================================
 //        __

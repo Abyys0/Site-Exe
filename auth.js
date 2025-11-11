@@ -667,6 +667,11 @@ function handleRegister(event) {
 
 // ===== CHECK IF USER IS LOGGED IN =====
 function checkAuth() {
+    // Não executar verificação na página de auth
+    if (window.location.pathname.includes('auth.html')) {
+        return;
+    }
+    
     const currentUser = StorageManager.getCurrentUser();
     if (currentUser) {
         // Verificar se sessão ainda é válida
