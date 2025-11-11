@@ -198,11 +198,13 @@ body {
 }
 
 .btn-outline {
-    padding: 0.75rem 1.5rem;
+    padding: 0.6rem 1.2rem;
     background: transparent;
     color: var(--primary);
     border: 2px solid var(--primary);
     border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
 }
 
 .btn-outline:hover {

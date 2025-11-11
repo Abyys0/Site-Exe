@@ -371,62 +371,6 @@ const XSSProtection = {
 };
 
 // ==========================================
-// 6. SECURE STORAGE MANAGER
-// ==========================================
-const SecureStorage = {
-    encryptionKey: null,
-
-    // Inicializar com chave
-    init() {
-        // Gerar chave baseada em características do navegador
-        const browserFingerprint = [
-            navigator.userAgent,
-            navigator.language,
-            screen.width + 'x' + screen.height,
-            new Date().getTimezoneOffset()
-        ].join('|');
-        
-        this.encryptionKey = btoa(browserFingerprint).substring(0, 32);
-    },
-
-    // Salvar dados criptografados
-    setItem(key, value) {
-        try {
-            const encrypted = CryptoModule.encryptData(value, this.encryptionKey);
-            localStorage.setItem(key, encrypted);
-            return true;
-        } catch (error) {
-            console.error('Secure storage error:', error);
-            return false;
-        }
-    },
-
-    // Recuperar dados descriptografados
-    getItem(key) {
-        try {
-            const encrypted = localStorage.getItem(key);
-            if (!encrypted) return null;
-            
-            return CryptoModule.decryptData(encrypted, this.encryptionKey);
-        } catch (error) {
-            console.error('Secure retrieval error:', error);
-            return null;
-        }
-    },
-
-    // Remover item
-    removeItem(key) {
-        localStorage.removeItem(key);
-    },
-
-    // Limpar todos os dados
-    clear() {
-        localStorage.clear();
-        sessionStorage.clear();
-    }
-};
-
-// ==========================================
 // 7. SECURITY MONITOR
 // ==========================================
 const SecurityMonitor = {
