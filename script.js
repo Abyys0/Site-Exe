@@ -563,62 +563,49 @@ function checkPageAccess() {
 // Executar verificação ao carregar
 checkPageAccess();
 
-// ===== VERIFICAR USUÁRIO LOGADO =====
-async function checkUserLogin() {
+// ===== VERIFICAR USUÁRIO LOGADO (NOVO SISTEMA) =====
+function checkUserLogin() {
     const userInfo = document.getElementById('userInfo');
     const guestButtons = document.getElementById('guestButtons');
     
     if (!userInfo || !guestButtons) return;
 
     try {
-        // Aguardar carregamento do sistema de segurança
-        if (!window.SecureStorage) {
-            console.warn('Sistema de segurança não carregado ainda');
+        // Verificar se o StorageManager está disponível
+        if (!window.StorageManager) {
+            console.warn('StorageManager não carregado ainda');
             return;
         }
 
-        // Buscar sessão criptografada
-        const session = await SecureStorage.load('exebots_session');
+        // Buscar sessão
+        const session = StorageManager.getSession();
         
-        if (session && Date.now() < session.expiresAt) {
-            // Buscar dados do usuário
-            const users = await SecureStorage.load('exebots_users') || [];
-            const user = users.find(u => u.email === session.email);
+        if (session) {
+            // Mostrar informações do usuário
+            document.getElementById('userName').textContent = `Olá, ${session.name}`;
+            userInfo.style.display = 'flex';
+            guestButtons.style.display = 'none';
             
-            if (user) {
-                // Sanitizar e mostrar informações do usuário
-                const safeName = SecuritySystem.sanitizeInput(user.name);
-                document.getElementById('userName').textContent = `Olá, ${safeName}`;
-                userInfo.style.display = 'flex';
-                guestButtons.style.display = 'none';
-                
-                console.log('%c✓ Usuário logado com segurança: ' + safeName, 'color: #00ff88; font-weight: bold;');
-            } else {
-                // Usuário não encontrado, limpar sessão
-                await SecureStorage.remove('exebots_session');
-            }
+            console.log('%c✓ Usuário logado: ' + session.name, 'color: #00ff88; font-weight: bold;');
         } else {
-            // Sessão expirada, limpar
-            if (session) {
-                await SecureStorage.remove('exebots_session');
-            }
+            // Não logado
+            userInfo.style.display = 'none';
+            guestButtons.style.display = 'flex';
         }
     } catch (error) {
         console.error('Erro ao verificar login:', error);
     }
 }
 
-// Função de logout
-async function logout() {
+// Função de logout (NOVO SISTEMA)
+function logout() {
     try {
-        // Limpar sessão criptografada
-        await SecureStorage.remove('exebots_session');
-        
-        // Log de segurança
-        SecuritySystem.logSecurityEvent('user_logout');
+        if (window.StorageManager) {
+            StorageManager.clearSession();
+        }
         
         // Redirecionar
-        window.location.href = 'index.html';
+        window.location.href = 'auth.html';
     } catch (error) {
         console.error('Erro ao fazer logout:', error);
         window.location.reload();

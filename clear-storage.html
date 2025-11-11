@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limpar Storage - EXE CODES</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #0f172a;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            padding: 2rem;
+            background: #1e293b;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.2);
+        }
+        h1 { color: #3b82f6; margin-bottom: 2rem; }
+        button {
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 0.5rem;
+        }
+        button:hover { transform: scale(1.05); }
+        .success { color: #10b981; margin-top: 1rem; }
+        .info { color: #94a3b8; margin-top: 1rem; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Limpeza de Dados - EXE CODES</h1>
+        <p>Esta ferramenta vai limpar TODOS os dados salvos do sistema.</p>
+        
+        <button onclick="clearAll()">🗑️ Limpar Tudo</button>
+        <button onclick="showData()">👁️ Ver Dados Atuais</button>
+        <button onclick="location.href='auth.html'">← Voltar</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function clearAll() {
+            const result = document.getElementById('result');
+            
+            try {
+                // Listar tudo que será removido
+                const keys = Object.keys(localStorage);
+                const exeKeys = keys.filter(k => k.includes('exe') || k.includes('user') || k.includes('session'));
+                
+                if (exeKeys.length === 0) {
+                    result.innerHTML = '<p class="info">✓ Nenhum dado encontrado para limpar</p>';
+                    return;
+                }
+                
+                // Limpar tudo relacionado ao EXE
+                localStorage.clear();
+                sessionStorage.clear();
+                
+                result.innerHTML = `
+                    <p class="success">✅ TUDO LIMPO!</p>
+                    <p class="info">Removidos ${exeKeys.length} itens:</p>
+                    <p class="info">${exeKeys.join(', ')}</p>
+                    <p class="info">Sistema resetado! Agora você pode fazer novos cadastros.</p>
+                `;
+                
+                console.log('Storage limpo:', exeKeys);
+            } catch (error) {
+                result.innerHTML = `<p style="color: #ef4444;">❌ Erro: ${error.message}</p>`;
+            }
+        }
+        
+        function showData() {
+            const result = document.getElementById('result');
+            
+            try {
+                const keys = Object.keys(localStorage);
+                const exeKeys = keys.filter(k => k.includes('exe') || k.includes('user') || k.includes('session'));
+                
+                if (exeKeys.length === 0) {
+                    result.innerHTML = '<p class="info">📭 Nenhum dado encontrado</p>';
+                    return;
+                }
+                
+                let html = '<p class="info">📊 Dados encontrados:</p><ul style="text-align: left; max-width: 500px; margin: 1rem auto;">';
+                
+                exeKeys.forEach(key => {
+                    const value = localStorage.getItem(key);
+                    const preview = value.length > 50 ? value.substring(0, 50) + '...' : value;
+                    html += `<li><strong>${key}:</strong> ${preview}</li>`;
+                });
+                
+                html += '</ul>';
+                result.innerHTML = html;
+            } catch (error) {
+                result.innerHTML = `<p style="color: #ef4444;">❌ Erro: ${error.message}</p>`;
+            }
+        }
+        
+        // Mostrar dados ao carregar
+        window.addEventListener('load', showData);
+    </script>
+</body>
+</html>
