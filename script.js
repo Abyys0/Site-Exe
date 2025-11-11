@@ -190,6 +190,8 @@ function navbarScroll() {
 // ===== TERMINAL TYPING ANIMATION =====
 function terminalTyping() {
     const terminal = document.querySelector('.terminal-body');
+    if (!terminal) return; // Verificar se elemento existe
+    
     const lines = terminal.querySelectorAll('.terminal-line');
     
     lines.forEach((line, index) => {
@@ -262,6 +264,7 @@ class CursorTrail {
 // ===== PRODUCT CARD TILT EFFECT =====
 function productCardTilt() {
     const cards = document.querySelectorAll('.product-card');
+    if (cards.length === 0) return; // Verificar se elementos existem
     
     cards.forEach(card => {
         card.addEventListener('mousemove', (e) => {
@@ -287,6 +290,7 @@ function productCardTilt() {
 // ===== GLITCH EFFECT ON HOVER =====
 function glitchEffect() {
     const glitchElements = document.querySelectorAll('.product-title, .feature-title');
+    if (glitchElements.length === 0) return; // Verificar se elementos existem
     
     glitchElements.forEach(element => {
         element.addEventListener('mouseenter', () => {
@@ -301,6 +305,7 @@ function glitchEffect() {
 // ===== STATS PULSE ANIMATION =====
 function statsPulse() {
     const stats = document.querySelectorAll('.stat-number');
+    if (stats.length === 0) return; // Verificar se elementos existem
     
     setInterval(() => {
         stats.forEach(stat => {
