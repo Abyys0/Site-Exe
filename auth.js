@@ -5,11 +5,9 @@
 const StorageManager = {
     async getUsers() {
         try {
-            const encrypted = localStorage.getItem('exebots_users');
-            if (!encrypted) return [];
-            
-            // Descriptografar dados
+            // Descriptografar dados do SecureStorage
             const users = await SecureStorage.load('exebots_users');
+            console.log('📦 Usuários carregados:', users ? users.length : 0);
             return users || [];
         } catch (error) {
             console.error('Error retrieving users:', error);
@@ -38,9 +36,13 @@ const StorageManager = {
             const { hash, salt } = await SecuritySystem.hashPassword(user.password);
             
             const users = await this.getUsers();
+            console.log('📋 Verificando usuários existentes:', users);
             
             // Verificar se usuário já existe
-            if (users.some(u => u.email === sanitizedUser.email)) {
+            const existingUser = users.find(u => u.email === sanitizedUser.email);
+            console.log('🔍 Usuário existente?', existingUser ? 'SIM' : 'NÃO');
+            
+            if (existingUser) {
                 throw new Error('Email já cadastrado!');
             }
 
@@ -158,6 +160,13 @@ const StorageManager = {
     async clearCurrentUser() {
         await SecureStorage.remove('exebots_session');
         SecuritySystem.logSecurityEvent('user_logout');
+    },
+
+    // Função para limpar todos os dados (debug)
+    async clearAllData() {
+        await SecureStorage.remove('exebots_users');
+        await SecureStorage.remove('exebots_session');
+        console.log('🗑️ Todos os dados foram limpos!');
     }
 };
 
@@ -691,6 +700,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     checkAuth();
     
     console.log('%c🔐 AUTH SYSTEM READY', 'color: #00ff88; font-size: 14px; font-weight: bold;');
+    console.log('%c💡 Para limpar dados corrompidos, execute: StorageManager.clearAllData()', 'color: #ffd700; font-size: 12px;');
+    
+    // Expor no console para debug
+    window.StorageManager = StorageManager;
 });
 
 // ==========================================
