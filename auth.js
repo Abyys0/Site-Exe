@@ -689,7 +689,10 @@ function logout() {
 }
 
 // ===== INICIALIZAÇÃO =====
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
+    // Aguardar sistema estar pronto
+    await waitForSystem();
+    
     checkAuth();
     
     console.log('%c🔐 AUTH SYSTEM READY', 'color: #00ff88; font-size: 14px; font-weight: bold;');
