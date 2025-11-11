@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login / Cadastro - EXE BOTS</title>
+    
+    <!-- Security Headers -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=(), payment=()">
+    
+    <link rel="stylesheet" href="auth.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Background Effects -->
+    <div class="matrix-bg" id="matrixBg"></div>
+    <canvas id="particles"></canvas>
+    
+    <!-- Black Hole Transition -->
+    <div class="blackhole-transition" id="blackholeTransition">
+        <div class="blackhole-core" id="blackholeCore">
+            <div class="blackhole-ring"></div>
+            <div class="blackhole-ring"></div>
+            <div class="blackhole-ring"></div>
+        </div>
+        <div class="distortion-overlay"></div>
+        <div class="light-burst"></div>
+        <div class="light-burst" style="animation-delay: 0.5s;"></div>
+        <div class="light-burst" style="animation-delay: 1s;"></div>
+    </div>
+    
+    <!-- Auth Container -->
+    <div class="auth-wrapper page-content-wrapper" id="pageContent">
+        <div class="auth-container">
+            <!-- Logo -->
+            <div class="auth-logo">
+                <span class="brand-icon">&lt;/&gt;</span>
+                <span class="brand-text">EXE<span class="accent">BOTS</span></span>
+            </div>
+
+            <!-- Login Form -->
+            <div class="auth-form-container" id="loginForm">
+                <div class="form-header">
+                    <h2 class="form-title">Bem-vindo de volta</h2>
+                    <p class="form-subtitle">Faça login para continuar</p>
+                </div>
+
+                <form class="auth-form" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label for="login-email">
+                            <span class="label-icon">📧</span>
+                            Email
+                        </label>
+                        <input 
+                            type="email" 
+                            id="login-email" 
+                            class="form-input" 
+                            placeholder="seu@email.com"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="login-password">
+                            <span class="label-icon">🔒</span>
+                            Senha
+                        </label>
+                        <input 
+                            type="password" 
+                            id="login-password" 
+                            class="form-input" 
+                            placeholder="••••••••"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-options">
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="remember-me">
+                            <span class="checkmark"></span>
+                            Lembrar-me
+                        </label>
+                        <a href="#" class="link-text">Esqueceu a senha?</a>
+                    </div>
+
+                    <button type="submit" class="btn-auth">
+                        <span>Entrar</span>
+                        <span class="btn-icon">→</span>
+                    </button>
+
+                    <div class="form-divider">
+                        <span>ou</span>
+                    </div>
+
+                    <button type="button" class="btn-switch" onclick="switchToRegister()">
+                        Criar nova conta
+                    </button>
+                </form>
+            </div>
+
+            <!-- Register Form -->
+            <div class="auth-form-container hidden" id="registerForm">
+                <div class="form-header">
+                    <h2 class="form-title">Criar Conta</h2>
+                    <p class="form-subtitle">Junte-se aos melhores jogadores</p>
+                </div>
+
+                <form class="auth-form" onsubmit="handleRegister(event)">
+                    <div class="form-group">
+                        <label for="register-name">
+                            <span class="label-icon">👤</span>
+                            Nome
+                        </label>
+                        <input 
+                            type="text" 
+                            id="register-name" 
+                            class="form-input" 
+                            placeholder="Seu nome"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="register-email">
+                            <span class="label-icon">📧</span>
+                            Email
+                        </label>
+                        <input 
+                            type="email" 
+                            id="register-email" 
+                            class="form-input" 
+                            placeholder="seu@email.com"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="register-password">
+                            <span class="label-icon">🔒</span>
+                            Senha
+                        </label>
+                        <input 
+                            type="password" 
+                            id="register-password" 
+                            class="form-input" 
+                            placeholder="••••••••"
+                            required
+                            minlength="6"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="register-confirm">
+                            <span class="label-icon">🔐</span>
+                            Confirmar Senha
+                        </label>
+                        <input 
+                            type="password" 
+                            id="register-confirm" 
+                            class="form-input" 
+                            placeholder="••••••••"
+                            required
+                        >
+                    </div>
+
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="accept-terms" required>
+                        <span class="checkmark"></span>
+                        Aceito os termos de uso e políticas
+                    </label>
+
+                    <button type="submit" class="btn-auth">
+                        <span>Criar Conta</span>
+                        <span class="btn-icon">→</span>
+                    </button>
+
+                    <div class="form-divider">
+                        <span>ou</span>
+                    </div>
+
+                    <button type="button" class="btn-switch" onclick="switchToLogin()">
+                        Já tenho uma conta
+                    </button>
+                </form>
+            </div>
+
+            <!-- Back Button -->
+            <a href="index.html" class="back-link">
+                <span>←</span> Voltar ao início
+            </a>
+        </div>
+    </div>
+
+    <!-- Encryption Animation Modal -->
+    <div class="encryption-modal hidden" id="encryptionModal">
+        <div class="encryption-content">
+            <div class="encryption-icon">
+                <div class="lock-container">
+                    <div class="lock-body"></div>
+                    <div class="lock-shackle"></div>
+                </div>
+            </div>
+            
+            <h2 class="encryption-title">
+                <span class="glitch-text" data-text="ENCRIPTANDO">ENCRIPTANDO</span>
+            </h2>
+            
+            <div class="encryption-status" id="encryptionStatus">
+                <div class="status-line">
+                    <span class="status-icon">▸</span>
+                    <span class="status-text">Inicializando protocolo de segurança...</span>
+                </div>
+            </div>
+
+            <div class="encryption-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text" id="progressText">0%</div>
+            </div>
+
+            <div class="encryption-code" id="encryptionCode"></div>
+
+            <div class="encryption-particles" id="encryptionParticles"></div>
+        </div>
+    </div>
+
+    <script src="security.js"></script>
+    <script src="encryption.js"></script>
+    <script src="script.js"></script>
+    <script src="auth.js"></script>
+</body>
+</html>

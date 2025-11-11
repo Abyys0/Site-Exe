@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EXE BOTS - Scripts Premium para Games</title>
+    
+    <!-- Security Headers -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=(), payment=()">>
+    
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Background Effects -->
+    <div class="matrix-bg" id="matrixBg"></div>
+    <canvas id="particles"></canvas>
+    
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <span class="brand-icon">&lt;/&gt;</span>
+                <span class="brand-text">EXE<span class="accent">BOTS</span></span>
+            </div>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="#home" class="nav-link">Início</a></li>
+                <li><a href="#features" class="nav-link">Recursos</a></li>
+                <li><a href="#products" class="nav-link">Produtos</a></li>
+                <li><a href="#contact" class="nav-link">Contato</a></li>
+            </ul>
+            <div class="nav-actions" id="navActions">
+                <button class="btn-cart" onclick="openCart()" id="cartButton">
+                    🛒 <span id="cartCount">0</span>
+                </button>
+                <div id="userInfo" style="display: none; align-items: center; gap: 1rem; margin-right: 1rem;">
+                    <span style="color: var(--primary); font-weight: 500;" id="userName"></span>
+                    <button class="btn-outline" onclick="logout()" style="padding: 0.6rem 1.2rem;">Sair</button>
+                </div>
+                <div id="guestButtons">
+                    <button class="btn-outline" onclick="window.location.href='auth.html'">Entrar</button>
+                    <button class="btn-primary" onclick="document.getElementById('products').scrollIntoView({behavior: 'smooth'})">Começar</button>
+                </div>
+            </div>
+            <!-- Mobile Menu Toggle -->
+            <button class="mobile-menu-toggle" id="mobileMenuToggle" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-tag">
+                    <span class="tag-dot"></span>
+                    Automação Premium para Games
+                </div>
+                <h1 class="hero-title">
+                    <span class="glitch" data-text="NEXT LEVEL">NEXT LEVEL</span>
+                    <br>
+                    <span class="gradient-text">GAMING BOTS</span>
+                </h1>
+                <p class="hero-description">
+                    Scripts avançados de automação para FiveM & MTA. 
+                    Desenvolvidos para performance, feitos para dominar.
+                </p>
+                <div class="hero-buttons">
+                    <button class="btn-hero-primary" onclick="document.getElementById('products').scrollIntoView({behavior: 'smooth'})">
+                        <span>Ver Produtos</span>
+                        <span class="btn-arrow">→</span>
+                    </button>
+                    <button class="btn-hero-secondary" onclick="alert('Demo em breve! 🎮\n\nEm breve você poderá assistir demonstrações ao vivo dos nossos bots em ação.')">
+                        <span class="play-icon">▶</span>
+                        <span>Ver Demo</span>
+                    </button>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <div class="stat-number" data-target="10000">0</div>
+                        <div class="stat-label">Usuários Ativos</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" data-target="99">0</div>
+                        <div class="stat-label">Disponibilidade %</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" data-target="24">0</div>
+                        <div class="stat-label">Suporte 24/7</div>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="terminal-window">
+                    <div class="terminal-header">
+                        <div class="terminal-buttons">
+                            <span class="btn-red"></span>
+                            <span class="btn-yellow"></span>
+                            <span class="btn-green"></span>
+                        </div>
+                        <div class="terminal-title">exe_bot.sh</div>
+                    </div>
+                    <div class="terminal-body">
+                        <div class="terminal-line"><span class="prompt">$</span> <span class="command">./exe_bot --init</span></div>
+                        <div class="terminal-line"><span class="success">[✓]</span> Inicializando Sistema EXE Bot...</div>
+                        <div class="terminal-line"><span class="success">[✓]</span> Carregando módulos: FiveM, MTA</div>
+                        <div class="terminal-line"><span class="success">[✓]</span> Performance: <span class="highlight">ÓTIMA</span></div>
+                        <div class="terminal-line"><span class="success">[✓]</span> Status: <span class="highlight">PRONTO</span></div>
+                        <div class="terminal-line terminal-cursor"><span class="prompt">$</span> <span class="command">_</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Por Que Nos Escolher</span>
+                <h2 class="section-title">Recursos de <span class="gradient-text">Ponta</span></h2>
+                <p class="section-description">Desenvolvido com as mais recentes tecnologias para máxima performance</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z"/>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Extremamente Rápido</h3>
+                    <p class="feature-description">Execução otimizada com uso mínimo de recursos e máxima eficiência</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Seguro e Protegido</h3>
+                    <p class="feature-description">Criptografia de nível militar e algoritmos anti-detecção mantêm você protegido</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Atualizações 24/7</h3>
+                    <p class="feature-description">Desenvolvimento contínuo e atualizações instantâneas para ficar sempre à frente</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Suporte Premium</h3>
+                    <p class="feature-description">Equipe especializada pronta para ajudar você a qualquer momento, com suporte dedicado</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="16 18 22 12 16 6"/>
+                            <polyline points="8 6 2 12 8 18"/>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Código Limpo</h3>
+                    <p class="feature-description">Arquitetura modular bem documentada para fácil customização e manutenção</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                            <line x1="12" y1="22.08" x2="12" y2="12"/>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Multi-Plataforma</h3>
+                    <p class="feature-description">Compatibilidade total com servidores FiveM e MTA, integração perfeita</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section class="products" id="products">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Nosso Arsenal</span>
+                <h2 class="section-title">Produtos <span class="gradient-text">Premium</span></h2>
+                <p class="section-description">Ferramentas profissionais de automação para jogadores sérios</p>
+            </div>
+            <div class="products-grid">
+                <!-- FiveM Bot -->
+                <div class="product-card">
+                    <div class="product-status coming-soon">EM BREVE</div>
+                    <div class="product-badge">FiveM</div>
+                    <div class="product-header">
+                        <h3 class="product-title">FiveM Pro Bot</h3>
+                        <div class="product-version">v2.0</div>
+                    </div>
+                    <p class="product-description">
+                        Suite avançada de automação para servidores FiveM com recursos de IA e otimização em tempo real.
+                    </p>
+                    <ul class="product-features">
+                        <li>
+                            <span class="check-icon">✓</span>
+                            <span>Farm automático e coleta de recursos</span>
+                        </li>
+                        <li>
+                            <span class="check-icon">✓</span>
+                            <span>Algoritmo inteligente de navegação</span>
+                        </li>
+                        <li>
+                            <span class="check-icon">✓</span>
+                            <span>Sistema anti-detecção</span>
+                        </li>
+                        <li>
+                            <span class="check-icon">✓</span>
+                            <span>Suporte para scripts personalizados</span>
+                        </li>
+                    </ul>
+                    <div class="product-footer">
+                        <div class="product-price">
+                            <span class="price-label">A partir de</span>
+                            <span class="price-value">R$ 199</span>
+                        </div>
+                        <button class="btn-product" onclick="addToCart('fivem-pro', 'FiveM Pro Bot', 199)">
+                            <span>Adicionar ao Carrinho</span>
+                            <span class="btn-arrow">🛒</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- MTA Bot -->
+                <div class="product-card featured">
+                    <div class="product-status coming-soon">EM BREVE</div>
+                    <div class="product-badge featured-badge">MTA</div>
+                    <div class="featured-tag">MAIS POPULAR</div>
+                    <div class="product-header">
+                        <h3 class="product-title">MTA Elite Bot</h3>
+                        <div class="product-version">v3.1</div>
+                    </div>
+                    <p class="product-description">
+                        Plataforma definitiva de automação para servidores MTA com machine learning e scripts avançados.
+                    </p>
+                    <ul class="product-features">
+                        <li>
+                            <span class="check-icon">✓</span>
+                            <span>Gerenciamento de múltiplas contas</span>
+                        </li>
+                        <li>
+                            <span class="check-icon">✓</span>
+                            <span>Sistema avançado de macros</span>
+                        </li>
+                        <li>
+                            <span class="check-icon">✓</span>
+                            <span>Análises em tempo real</span>
+                        </li>
+                        <li>
+                            <span class="check-icon">✓</span>
+                            <span>Sincronização em nuvem</span>
+                        </li>
+                    </ul>
+                    <div class="product-footer">
+                        <div class="product-price">
+                            <span class="price-label">A partir de</span>
+                            <span class="price-value">R$ 299</span>
+                        </div>
+                        <button class="btn-product" onclick="addToCart('mta-elite', 'MTA Elite Bot', 299)">
+                            <span>Adicionar ao Carrinho</span>
+                            <span class="btn-arrow">🛒</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Bundle Package -->
+                <div class="product-card">
+                    <div class="product-status coming-soon">EM BREVE</div>
+                    <div class="product-badge bundle-badge">PACOTE</div>
+                    <div class="product-header">
+                        <h3 class="product-title">Pacote Completo</h3>
+                        <div class="product-version">TUDO-EM-UM</div>
+                    </div>
+                    <p class="product-description">
+                        Suite completa de automação com bots FiveM e MTA além de recursos premium exclusivos.
+                    </p>
+                    <ul class="product-features">
+                        <li>
+                            <span class="check-icon">✓</span>
+                            <span>FiveM + MTA Pro Bots</span>
+                        </li>
+                        <li>
+                            <span class="check-icon">✓</span>
+                            <span>Acesso prioritário ao suporte</span>
+                        </li>
+                        <li>
+                            <span class="check-icon">✓</span>
+                            <span>Atualizações vitalícias</span>
+                        </li>
+                        <li>
+                            <span class="check-icon">✓</span>
+                            <span>Desenvolvimento personalizado</span>
+                        </li>
+                    </ul>
+                    <div class="product-footer">
+                        <div class="product-price">
+                            <span class="price-label">Economize 40%</span>
+                            <span class="price-value">R$ 399</span>
+                        </div>
+                        <button class="btn-product" onclick="addToCart('pacote-completo', 'Pacote Completo', 399)">
+                            <span>Adicionar ao Carrinho</span>
+                            <span class="btn-arrow">🛒</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="container">
+            <div class="cta-content">
+                <h2 class="cta-title">Pronto para <span class="gradient-text">Dominar</span>?</h2>
+                <p class="cta-description">Junte-se a milhares de jogadores usando nossas ferramentas premium de automação</p>
+                <button class="btn-cta" onclick="document.getElementById('products').scrollIntoView({behavior: 'smooth'})">
+                    <span>Acesso Antecipado</span>
+                    <span class="btn-arrow">→</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer" id="contact">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="brand">
+                        <span class="brand-icon">&lt;/&gt;</span>
+                        <span class="brand-text">EXE<span class="accent">BOTS</span></span>
+                    </div>
+                    <p class="footer-description">
+                        Scripts premium de automação para games desenvolvidos para performance e confiabilidade.
+                    </p>
+                    <div class="social-links">
+                        <a href="#" class="social-link">Discord</a>
+                        <a href="#" class="social-link">Twitter</a>
+                        <a href="#" class="social-link">GitHub</a>
+                    </div>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>Produtos</h4>
+                        <a href="#">FiveM Bot</a>
+                        <a href="#">MTA Bot</a>
+                        <a href="#">Pacote</a>
+                        <a href="#">Preços</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Suporte</h4>
+                        <a href="#">Documentação</a>
+                        <a href="#">Referência API</a>
+                        <a href="#">Comunidade</a>
+                        <a href="#">Contato</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Legal</h4>
+                        <a href="#">Termos de Serviço</a>
+                        <a href="#">Política de Privacidade</a>
+                        <a href="#">Licença</a>
+                        <a href="#">Política de Reembolso</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 EXE BOTS. Todos os direitos reservados.</p>
+                <p class="footer-code">Desenvolvido com <span class="heart">♥</span> por devs, para gamers.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="security.js"></script>
+    <script src="encryption.js"></script>
+    <script src="cart.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

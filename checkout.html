@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - EXE BOTS</title>
+    
+    <!-- Security Headers -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com https://www.paypal.com https://www.paypalobjects.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https:; frame-src https://www.paypal.com; media-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
+    
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="auth.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        .checkout-container {
+            min-height: 100vh;
+            padding: 2rem;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+        }
+
+        .checkout-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 2rem;
+            margin-top: 80px;
+        }
+
+        .checkout-section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(0, 255, 136, 0.2);
+            border-radius: 16px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .checkout-title {
+            color: var(--primary);
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: rgba(0, 255, 136, 0.05);
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .order-item-info h4 {
+            color: white;
+            margin: 0 0 0.5rem 0;
+        }
+
+        .order-item-info p {
+            color: rgba(255, 255, 255, 0.6);
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        .order-item-price {
+            color: var(--primary);
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .order-summary {
+            background: rgba(0, 212, 255, 0.05);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .summary-line {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .summary-line.total {
+            border-top: 2px solid rgba(0, 255, 136, 0.3);
+            margin-top: 1rem;
+            padding-top: 1rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .payment-methods {
+            margin-top: 2rem;
+        }
+
+        .payment-method {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(0, 255, 136, 0.2);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .payment-method:hover {
+            border-color: var(--primary);
+            background: rgba(0, 255, 136, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .payment-method.selected {
+            border-color: var(--primary);
+            background: rgba(0, 255, 136, 0.1);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+        }
+
+        .payment-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .payment-icon {
+            font-size: 2rem;
+        }
+
+        .payment-title {
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .payment-desc {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+            margin: 0;
+            margin-left: 3rem;
+        }
+
+        .pix-details {
+            display: none;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid rgba(0, 255, 136, 0.2);
+        }
+
+        .pix-details.active {
+            display: block;
+        }
+
+        .pix-qrcode {
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .pix-qrcode img {
+            max-width: 250px;
+            border: 4px solid var(--primary);
+            border-radius: 12px;
+            padding: 1rem;
+            background: white;
+        }
+
+        .pix-code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+            color: var(--primary);
+            font-size: 0.9rem;
+        }
+
+        .copy-button {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--primary);
+            color: var(--bg-primary);
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .copy-button:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        .paypal-button-container {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid rgba(0, 255, 136, 0.2);
+            display: none;
+        }
+
+        .paypal-button-container.active {
+            display: block;
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-bottom: 2rem;
+        }
+
+        .btn-back:hover {
+            border-color: var(--primary);
+            background: rgba(0, 255, 136, 0.1);
+            transform: translateX(-5px);
+        }
+
+        @media (max-width: 768px) {
+            .checkout-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="matrix-bg" id="matrixBg"></div>
+    <canvas id="particles"></canvas>
+
+    <div class="checkout-container">
+        <a href="index.html" class="btn-back">← Voltar à Loja</a>
+
+        <div class="checkout-content">
+            <!-- Resumo do Pedido -->
+            <div class="checkout-section">
+                <h2 class="checkout-title">📦 Resumo do Pedido</h2>
+                <div id="orderItems"></div>
+                
+                <div class="order-summary">
+                    <div class="summary-line">
+                        <span>Subtotal</span>
+                        <span id="subtotal">R$ 0,00</span>
+                    </div>
+                    <div class="summary-line">
+                        <span>Desconto</span>
+                        <span style="color: var(--accent);">-R$ 0,00</span>
+                    </div>
+                    <div class="summary-line total">
+                        <span>Total</span>
+                        <span id="total">R$ 0,00</span>
+                    </div>
+                </div>
+
+                <!-- Métodos de Pagamento -->
+                <div class="payment-methods">
+                    <h3 class="checkout-title">💳 Forma de Pagamento</h3>
+
+                    <!-- PIX -->
+                    <div class="payment-method" id="pixMethod" onclick="selectPayment('pix')">
+                        <div class="payment-header">
+                            <span class="payment-icon">📱</span>
+                            <h4 class="payment-title">PIX</h4>
+                        </div>
+                        <p class="payment-desc">Pagamento instantâneo via QR Code ou Copia e Cola</p>
+                        
+                        <div class="pix-details" id="pixDetails">
+                            <p style="color: var(--primary); font-weight: 600; text-align: center;">
+                                Escaneie o QR Code ou copie o código PIX
+                            </p>
+                            
+                            <div class="pix-qrcode" id="pixQRCode">
+                                <!-- QR Code será gerado aqui -->
+                            </div>
+
+                            <div class="pix-code" id="pixCode">
+                                <!-- Código PIX Copia e Cola -->
+                            </div>
+
+                            <button class="copy-button" onclick="copyPixCode()">
+                                📋 Copiar Código PIX
+                            </button>
+
+                            <button class="copy-button" onclick="openQRScanner()" style="background: rgba(255, 0, 128, 0.2); border-color: var(--accent); margin-top: 0.5rem;">
+                                📷 Escanear QR Code com Câmera
+                            </button>
+
+                            <p style="color: rgba(255, 255, 255, 0.6); font-size: 0.9rem; margin-top: 1rem; text-align: center;">
+                                Após o pagamento, o acesso será liberado automaticamente em até 5 minutos.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- PayPal -->
+                    <div class="payment-method" id="paypalMethod" onclick="selectPayment('paypal')">
+                        <div class="payment-header">
+                            <span class="payment-icon">💰</span>
+                            <h4 class="payment-title">PayPal</h4>
+                        </div>
+                        <p class="payment-desc">Pague com PayPal, cartão de crédito ou débito</p>
+                        
+                        <div class="paypal-button-container" id="paypalButtons">
+                            <div id="paypal-button-container"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informações do Usuário -->
+            <div class="checkout-section">
+                <h2 class="checkout-title">👤 Suas Informações</h2>
+                <div id="userInfo"></div>
+
+                <div style="margin-top: 2rem; padding: 1rem; background: rgba(0, 255, 136, 0.05); border: 1px solid rgba(0, 255, 136, 0.2); border-radius: 8px;">
+                    <h4 style="color: var(--primary); margin: 0 0 0.5rem 0;">🔒 Compra Segura</h4>
+                    <ul style="color: rgba(255, 255, 255, 0.7); font-size: 0.9rem; margin: 0; padding-left: 1.5rem;">
+                        <li>Transação 100% segura</li>
+                        <li>Seus dados estão protegidos</li>
+                        <li>Acesso imediato após confirmação</li>
+                        <li>Suporte 24/7 disponível</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="security.js"></script>
+    <script src="encryption.js"></script>
+    <script src="cart.js"></script>
+    <script src="script.js"></script>
+    
+    <!-- jsQR Library para detecção de QR Code -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    
+    <!-- PayPal SDK -->
+    <script src="https://www.paypal.com/sdk/js?client-id=AYg0Aoko_Dmj3xmmO091kleua6wThmV0PlrQTqdO8J_xwoyRhjNlKJQ2ZfeuTxrByrt-EMX6D5dG5ffJ&currency=BRL"></script>
+    
+    <script src="checkout.js"></script>
+</body>
+</html>
+</body>
+</html>
