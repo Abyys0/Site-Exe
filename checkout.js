@@ -50,22 +50,56 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 // ===== CARREGAR PEDIDO =====
 async function loadOrder() {
-    const cart = await SecureStorage.load('exebots_cart') || [];
-    
-    if (cart.length === 0) {
-        alert('Seu carrinho está vazio!');
+    try {
+        // Tentar carregar do SecureStorage (sistema antigo) ou localStorage direto
+        let cart = [];
+        
+        if (window.SecureStorage) {
+            cart = await SecureStorage.load('exebots_cart') || [];
+        }
+        
+        // Se não encontrou no SecureStorage, tentar no localStorage direto
+        if (cart.length === 0) {
+            const localCart = localStorage.getItem('exebots_cart');
+            if (localCart) {
+                try {
+                    cart = JSON.parse(localCart);
+                } catch (e) {
+                    console.error('Erro ao parsear carrinho do localStorage:', e);
+                }
+            }
+        }
+        
+        console.log('🛒 Carrinho carregado:', cart);
+        
+        if (!cart || cart.length === 0) {
+            alert('Seu carrinho está vazio!');
+            window.location.href = 'index.html';
+            return;
+        }
+
+        // Garantir que cart é array antes de usar reduce
+        if (!Array.isArray(cart)) {
+            console.error('❌ Carrinho não é um array:', cart);
+            alert('Erro ao carregar carrinho. Por favor, tente novamente.');
+            window.location.href = 'index.html';
+            return;
+        }
+
+        orderData = {
+            items: cart,
+            total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+            orderId: 'EXE-' + Date.now() + '-' + Math.random().toString(36).substring(2, 10).toUpperCase(),
+            createdAt: new Date().toISOString()
+        };
+
+        console.log('📦 Pedido criado:', orderData);
+        renderOrder();
+    } catch (error) {
+        console.error('❌ Erro ao carregar pedido:', error);
+        alert('Erro ao carregar carrinho. Por favor, tente novamente.');
         window.location.href = 'index.html';
-        return;
     }
-
-    orderData = {
-        items: cart,
-        total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
-        orderId: 'EXE-' + Date.now() + '-' + SecuritySystem.generateRandomString(8),
-        createdAt: new Date().toISOString()
-    };
-
-    renderOrder();
 }
 
 // ===== RENDERIZAR PEDIDO =====
@@ -73,6 +107,15 @@ function renderOrder() {
     const container = document.getElementById('orderItems');
     const subtotalEl = document.getElementById('subtotal');
     const totalEl = document.getElementById('total');
+
+    if (!container || !subtotalEl || !totalEl) {
+        console.error('❌ Elementos do pedido não encontrados!', {
+            container: !!container,
+            subtotalEl: !!subtotalEl,
+            totalEl: !!totalEl
+        });
+        return;
+    }
 
     let html = '';
     orderData.items.forEach(item => {
@@ -92,17 +135,31 @@ function renderOrder() {
     container.innerHTML = html;
     subtotalEl.textContent = `R$ ${orderData.total.toFixed(2)}`;
     totalEl.textContent = `R$ ${orderData.total.toFixed(2)}`;
+    
+    console.log('✅ Pedido renderizado com sucesso');
 }
 
 // ===== CARREGAR INFO DO USUÁRIO =====
 async function loadUserInfo() {
     // Usar novo sistema de autenticação
-    if (!window.StorageManager) return;
+    if (!window.StorageManager) {
+        console.warn('⚠️ StorageManager não disponível');
+        return;
+    }
     
     const session = StorageManager.getSession();
-    if (!session) return;
+    if (!session) {
+        console.warn('⚠️ Sessão não encontrada');
+        return;
+    }
 
-    document.getElementById('userInfo').innerHTML = `
+    const userInfoEl = document.getElementById('userInfo');
+    if (!userInfoEl) {
+        console.error('❌ Elemento #userInfo não encontrado');
+        return;
+    }
+
+    userInfoEl.innerHTML = `
         <div style="padding: 1rem; background: rgba(0, 255, 136, 0.05); border: 1px solid rgba(0, 255, 136, 0.2); border-radius: 8px;">
             <p style="margin: 0.5rem 0; color: white;"><strong>Nome:</strong> ${session.name}</p>
             <p style="margin: 0.5rem 0; color: white;"><strong>Email:</strong> ${session.email}</p>
@@ -111,6 +168,8 @@ async function loadUserInfo() {
             </p>
         </div>
     `;
+    
+    console.log('✅ Info do usuário carregada');
 }
 
 // ===== SELECIONAR MÉTODO DE PAGAMENTO =====
@@ -123,29 +182,59 @@ function selectPayment(method) {
     });
 
     // Esconder todos os detalhes
-    document.getElementById('pixDetails').classList.remove('active');
-    document.getElementById('paypalButtons').classList.remove('active');
+    const pixDetails = document.getElementById('pixDetails');
+    const paypalButtons = document.getElementById('paypalButtons');
+    
+    if (pixDetails) pixDetails.classList.remove('active');
+    if (paypalButtons) paypalButtons.classList.remove('active');
 
     if (method === 'pix') {
-        document.getElementById('pixMethod').classList.add('selected');
-        document.getElementById('pixDetails').classList.add('active');
+        const pixMethod = document.getElementById('pixMethod');
+        if (pixMethod) pixMethod.classList.add('selected');
+        if (pixDetails) pixDetails.classList.add('active');
         generatePixCode();
     } else if (method === 'paypal') {
-        document.getElementById('paypalMethod').classList.add('selected');
-        document.getElementById('paypalButtons').classList.add('active');
+        const paypalMethod = document.getElementById('paypalMethod');
+        if (paypalMethod) paypalMethod.classList.add('selected');
+        if (paypalButtons) paypalButtons.classList.add('active');
         loadPayPalButtons();
     }
 }
 
 // ===== GERAR CÓDIGO PIX =====
 function generatePixCode() {
+    if (!orderData) {
+        console.error('❌ orderData não definido ainda!');
+        return;
+    }
+    
     const pixCode = generatePixPayload();
     
-    // Exibir código
-    document.getElementById('pixCode').textContent = pixCode;
+    // Exibir código com estilo melhorado
+    const pixCodeElement = document.getElementById('pixCode');
+    
+    if (!pixCodeElement) {
+        console.error('❌ Elemento #pixCode não encontrado!');
+        return;
+    }
+    
+    pixCodeElement.textContent = pixCode;
+    pixCodeElement.style.display = 'block';
+    pixCodeElement.style.wordBreak = 'break-all';
+    pixCodeElement.style.padding = '1rem';
+    pixCodeElement.style.background = 'rgba(0, 0, 0, 0.3)';
+    pixCodeElement.style.border = '1px solid rgba(0, 255, 136, 0.3)';
+    pixCodeElement.style.borderRadius = '8px';
+    pixCodeElement.style.fontSize = '0.75rem';
+    pixCodeElement.style.fontFamily = 'monospace';
+    pixCodeElement.style.color = 'rgba(255, 255, 255, 0.8)';
+    pixCodeElement.style.marginTop = '1rem';
+    pixCodeElement.style.maxHeight = '100px';
+    pixCodeElement.style.overflowY = 'auto';
     
     // Gerar QR Code
     generateQRCode(pixCode);
+
 }
 
 // ===== GERAR PAYLOAD PIX (EMV) =====
@@ -220,6 +309,16 @@ function calculateCRC16(payload) {
 function generateQRCode(text) {
     const container = document.getElementById('pixQRCode');
     
+    if (!container) {
+        console.error('❌ Elemento #pixQRCode não encontrado!');
+        return;
+    }
+    
+    if (!orderData) {
+        console.error('❌ orderData não definido!');
+        return;
+    }
+    
     // Usar API pública para gerar QR Code com melhor qualidade
     const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=${encodeURIComponent(text)}`;
     
@@ -241,23 +340,44 @@ function generateQRCode(text) {
             </div>
         </div>
     `;
+    
+    console.log('✅ QR Code gerado com sucesso');
 }
 
 // ===== COPIAR CÓDIGO PIX =====
 function copyPixCode() {
-    const pixCode = document.getElementById('pixCode').textContent;
+    const pixCodeElement = document.getElementById('pixCode');
+    const pixCode = pixCodeElement.textContent;
+    
+    console.log('🔍 Tentando copiar código PIX:', pixCode.substring(0, 50) + '...');
+    
+    if (!pixCode || pixCode.trim() === '') {
+        showNotification('❌ Erro: Código PIX não gerado ainda!', 'error');
+        console.error('❌ Elemento #pixCode está vazio!');
+        return;
+    }
     
     navigator.clipboard.writeText(pixCode).then(() => {
-        showNotification('Código PIX copiado! Cole no seu app de pagamento.', 'success');
-    }).catch(() => {
+        showNotification('✅ Código PIX copiado! Cole no seu app de pagamento.', 'success');
+        console.log('✅ Código PIX copiado com sucesso!');
+    }).catch((err) => {
+        console.error('❌ Erro ao copiar com clipboard API:', err);
         // Fallback para navegadores antigos
         const textArea = document.createElement('textarea');
         textArea.value = pixCode;
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
         document.body.appendChild(textArea);
         textArea.select();
-        document.execCommand('copy');
+        try {
+            document.execCommand('copy');
+            showNotification('✅ Código PIX copiado!', 'success');
+            console.log('✅ Código PIX copiado (fallback)!');
+        } catch (fallbackErr) {
+            showNotification('❌ Erro ao copiar código', 'error');
+            console.error('❌ Erro no fallback:', fallbackErr);
+        }
         document.body.removeChild(textArea);
-        showNotification('Código PIX copiado!', 'success');
     });
 }
 
