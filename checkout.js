@@ -21,23 +21,23 @@ let qrScanner = null;
 
 // ===== INICIALIZAÇÃO =====
 document.addEventListener('DOMContentLoaded', async function() {
-    // Aguardar sistema de segurança inicializar
-    if (!window.SecuritySystem) {
-        console.error('Sistema de segurança não carregado!');
+    // Verificar se usuário está logado usando o novo sistema
+    if (window.StorageManager) {
+        const session = StorageManager.getSession();
+        if (!session) {
+            alert('Por favor, faça login para continuar com a compra.');
+            window.location.href = 'auth.html';
+            return;
+        }
+        console.log('✅ Usuário autenticado:', session.name);
+    } else {
+        console.error('StorageManager não carregado!');
         alert('Erro ao carregar página. Por favor, recarregue.');
         return;
     }
 
-    await SecuritySystem.init();
     await loadOrder();
     await loadUserInfo();
-    
-    // Verificar se usuário está logado
-    const currentUser = await SecureStorage.load('exebots_session');
-    if (!currentUser || Date.now() > currentUser.expiresAt) {
-        alert('Por favor, faça login para continuar.');
-        window.location.href = 'auth.html';
-    }
 });
 
 // ===== CARREGAR PEDIDO =====
@@ -88,23 +88,21 @@ function renderOrder() {
 
 // ===== CARREGAR INFO DO USUÁRIO =====
 async function loadUserInfo() {
-    const session = await SecureStorage.load('exebots_session');
+    // Usar novo sistema de autenticação
+    if (!window.StorageManager) return;
+    
+    const session = StorageManager.getSession();
     if (!session) return;
 
-    const users = await SecureStorage.load('exebots_users') || [];
-    const user = users.find(u => u.email === session.email);
-
-    if (user) {
-        document.getElementById('userInfo').innerHTML = `
-            <div style="padding: 1rem; background: rgba(0, 255, 136, 0.05); border: 1px solid rgba(0, 255, 136, 0.2); border-radius: 8px;">
-                <p style="margin: 0.5rem 0; color: white;"><strong>Nome:</strong> ${SecuritySystem.sanitizeInput(user.name)}</p>
-                <p style="margin: 0.5rem 0; color: white;"><strong>Email:</strong> ${SecuritySystem.sanitizeInput(user.email)}</p>
-                <p style="margin: 0.5rem 0; color: rgba(255, 255, 255, 0.6); font-size: 0.9rem;">
-                    Os produtos serão enviados para este email.
-                </p>
-            </div>
-        `;
-    }
+    document.getElementById('userInfo').innerHTML = `
+        <div style="padding: 1rem; background: rgba(0, 255, 136, 0.05); border: 1px solid rgba(0, 255, 136, 0.2); border-radius: 8px;">
+            <p style="margin: 0.5rem 0; color: white;"><strong>Nome:</strong> ${session.name}</p>
+            <p style="margin: 0.5rem 0; color: white;"><strong>Email:</strong> ${session.email}</p>
+            <p style="margin: 0.5rem 0; color: rgba(255, 255, 255, 0.6); font-size: 0.9rem;">
+                Os produtos serão enviados para este email.
+            </p>
+        </div>
+    `;
 }
 
 // ===== SELECIONAR MÉTODO DE PAGAMENTO =====
