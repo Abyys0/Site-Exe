@@ -7,10 +7,23 @@ const StorageManager = {
         try {
             // Descriptografar dados do SecureStorage
             const users = await SecureStorage.load('exebots_users');
-            console.log('📦 Usuários carregados:', users ? users.length : 0);
-            return users || [];
+            
+            // Verificar se retornou dados válidos
+            if (!users || !Array.isArray(users)) {
+                console.warn('⚠️ Dados de usuários inválidos, iniciando array vazio');
+                return [];
+            }
+            
+            return users;
         } catch (error) {
             console.error('Error retrieving users:', error);
+            // Se houver erro ao carregar, limpar dados corrompidos
+            try {
+                await SecureStorage.remove('exebots_users');
+                console.log('🗑️ Dados corrompidos removidos');
+            } catch (e) {
+                console.error('Erro ao limpar dados:', e);
+            }
             return [];
         }
     },
@@ -36,13 +49,9 @@ const StorageManager = {
             const { hash, salt } = await SecuritySystem.hashPassword(user.password);
             
             const users = await this.getUsers();
-            console.log('📋 Verificando usuários existentes:', users);
             
             // Verificar se usuário já existe
-            const existingUser = users.find(u => u.email === sanitizedUser.email);
-            console.log('🔍 Usuário existente?', existingUser ? 'SIM' : 'NÃO');
-            
-            if (existingUser) {
+            if (users.find(u => u.email === sanitizedUser.email)) {
                 throw new Error('Email já cadastrado!');
             }
 
@@ -697,13 +706,18 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Aguardar sistema estar pronto
     await waitForSystem();
     
+    // CORREÇÃO TEMPORÁRIA: Limpar dados corrompidos uma vez
+    const needsReset = localStorage.getItem('auth_needs_reset');
+    if (needsReset === null) {
+        console.log('� Limpando dados antigos...');
+        await StorageManager.clearAllData();
+        localStorage.setItem('auth_needs_reset', 'false');
+        console.log('✅ Dados limpos! Você pode criar uma conta agora.');
+    }
+    
     checkAuth();
     
     console.log('%c🔐 AUTH SYSTEM READY', 'color: #00ff88; font-size: 14px; font-weight: bold;');
-    console.log('%c💡 Para limpar dados corrompidos, execute: StorageManager.clearAllData()', 'color: #ffd700; font-size: 12px;');
-    
-    // Expor no console para debug
-    window.StorageManager = StorageManager;
 });
 
 // ==========================================
