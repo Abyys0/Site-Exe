@@ -666,25 +666,20 @@ function handleRegister(event) {
 }
 
 // ===== CHECK IF USER IS LOGGED IN =====
-function checkAuth() {
-    const currentUser = StorageManager.getCurrentUser();
-    if (currentUser) {
-        // Verificar se sessão ainda é válida
-        if (!SessionManager.isSessionValid()) {
-            StorageManager.clearCurrentUser();
-            window.location.href = 'auth.html';
-            return;
+async function checkAuth() {
+    try {
+        const currentUser = await StorageManager.getCurrentUser();
+        if (currentUser) {
+            console.log('Usuário autenticado:', currentUser);
         }
-        console.log('Usuário autenticado:', currentUser);
+    } catch (error) {
+        console.log('Nenhum usuário logado');
     }
 }
 
 // ===== LOGOUT FUNCTION =====
-function logout() {
-    StorageManager.clearCurrentUser();
-    RateLimiter.logSecurityEvent('LOGOUT', { 
-        timestamp: Date.now()
-    });
+async function logout() {
+    await StorageManager.clearCurrentUser();
     window.location.href = 'auth.html';
 }
 
