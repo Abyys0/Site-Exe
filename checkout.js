@@ -51,37 +51,55 @@ document.addEventListener('DOMContentLoaded', async function() {
 // ===== CARREGAR PEDIDO =====
 async function loadOrder() {
     try {
+        console.log('🔍 Iniciando carregamento do carrinho...');
+        
         // Tentar carregar do SecureStorage (sistema antigo) ou localStorage direto
-        let cart = [];
+        let cart = null;
         
         if (window.SecureStorage) {
-            cart = await SecureStorage.load('exebots_cart') || [];
+            console.log('🔐 Tentando carregar do SecureStorage...');
+            try {
+                cart = await SecureStorage.load('exebots_cart');
+                console.log('📦 SecureStorage retornou:', cart, 'Tipo:', typeof cart);
+            } catch (e) {
+                console.error('❌ Erro no SecureStorage:', e);
+            }
         }
         
         // Se não encontrou no SecureStorage, tentar no localStorage direto
-        if (cart.length === 0) {
+        if (!cart || !Array.isArray(cart) || cart.length === 0) {
+            console.log('💾 Tentando carregar do localStorage...');
             const localCart = localStorage.getItem('exebots_cart');
+            console.log('📦 localStorage retornou:', localCart);
+            
             if (localCart) {
                 try {
                     cart = JSON.parse(localCart);
+                    console.log('✅ Carrinho parseado:', cart);
                 } catch (e) {
-                    console.error('Erro ao parsear carrinho do localStorage:', e);
+                    console.error('❌ Erro ao parsear carrinho do localStorage:', e);
+                    cart = null;
                 }
             }
         }
         
-        console.log('🛒 Carrinho carregado:', cart);
-        
-        if (!cart || cart.length === 0) {
-            alert('Seu carrinho está vazio!');
-            window.location.href = 'index.html';
-            return;
+        // Garantir que cart é array
+        if (!cart) {
+            cart = [];
+        } else if (!Array.isArray(cart)) {
+            console.error('⚠️ Cart não é array, convertendo...', cart);
+            // Se for objeto com items, extrair items
+            if (cart.items && Array.isArray(cart.items)) {
+                cart = cart.items;
+            } else {
+                cart = [];
+            }
         }
-
-        // Garantir que cart é array antes de usar reduce
-        if (!Array.isArray(cart)) {
-            console.error('❌ Carrinho não é um array:', cart);
-            alert('Erro ao carregar carrinho. Por favor, tente novamente.');
+        
+        console.log('🛒 Carrinho final:', cart, 'É array?', Array.isArray(cart), 'Length:', cart.length);
+        
+        if (cart.length === 0) {
+            alert('Seu carrinho está vazio!');
             window.location.href = 'index.html';
             return;
         }
