@@ -151,58 +151,95 @@ function generatePixCode() {
 // ===== GERAR PAYLOAD PIX (EMV) =====
 function generatePixPayload() {
     const amount = orderData.total.toFixed(2);
+    const pixKey = CheckoutConfig.pixKey;
+    const merchantName = CheckoutConfig.pixName.toUpperCase().substring(0, 25);
+    const merchantCity = CheckoutConfig.pixCity.toUpperCase().substring(0, 15);
+    const txid = orderData.orderId.substring(0, 25);
     
-    // Formato simplificado do PIX Copia e Cola
-    // Em produção, use uma biblioteca adequada para gerar o payload completo
-    const payload = `00020126${getPixKeyField()}52040000530398654${getAmountField(amount)}5802BR59${getName()}60${getCity()}62${getTransactionId()}6304${getCRC()}`;
+    // Payload PIX usando formato EMV
+    let payload = '00020126'; // Payload Format Indicator
     
-    // Para demonstração, retornamos um payload simplificado
-    // IMPORTANTE: Em produção, use uma biblioteca PIX adequada ou API de pagamento
-    return `00020126360014BR.GOV.BCB.PIX0114${CheckoutConfig.pixKey}520400005303986540${amount.length}${amount}5802BR5913${CheckoutConfig.pixName}6009${CheckoutConfig.pixCity}62070503***63041D3D`;
+    // Merchant Account Information
+    const pixKeyLength = pixKey.length.toString().padStart(2, '0');
+    const merchantAccount = `0014BR.GOV.BCB.PIX01${pixKeyLength}${pixKey}`;
+    const merchantAccountLength = merchantAccount.length.toString().padStart(2, '0');
+    payload += `${merchantAccountLength}${merchantAccount}`;
+    
+    payload += '52040000'; // Merchant Category Code
+    payload += '5303986'; // Transaction Currency (986 = BRL)
+    
+    // Transaction Amount
+    const amountStr = amount.toString();
+    const amountLength = amountStr.length.toString().padStart(2, '0');
+    payload += `54${amountLength}${amountStr}`;
+    
+    payload += '5802BR'; // Country Code
+    
+    // Merchant Name
+    const nameLength = merchantName.length.toString().padStart(2, '0');
+    payload += `59${nameLength}${merchantName}`;
+    
+    // Merchant City
+    const cityLength = merchantCity.length.toString().padStart(2, '0');
+    payload += `60${cityLength}${merchantCity}`;
+    
+    // Additional Data Field
+    const txidField = `05${txid.length.toString().padStart(2, '0')}${txid}`;
+    const additionalDataLength = txidField.length.toString().padStart(2, '0');
+    payload += `62${additionalDataLength}${txidField}`;
+    
+    // CRC16
+    payload += '6304';
+    const crc = calculateCRC16(payload);
+    payload += crc;
+    
+    return payload;
 }
 
-function getPixKeyField() {
-    const key = CheckoutConfig.pixKey;
-    const keyLength = key.length.toString().padStart(2, '0');
-    return `0014BR.GOV.BCB.PIX01${keyLength}${key}`;
-}
-
-function getAmountField(amount) {
-    return `0${amount.length}${amount}`;
-}
-
-function getName() {
-    const name = CheckoutConfig.pixName.substring(0, 25);
-    return `0${name.length}${name}`;
-}
-
-function getCity() {
-    const city = CheckoutConfig.pixCity.substring(0, 15);
-    return `0${city.length}${city}`;
-}
-
-function getTransactionId() {
-    const txId = orderData.orderId;
-    return `05${txId.length}${txId}`;
-}
-
-function getCRC() {
-    // CRC simplificado - em produção, calcular CRC16 real
-    return '1D3D';
+// ===== CALCULAR CRC16 =====
+function calculateCRC16(payload) {
+    const polynomial = 0x1021;
+    let crc = 0xFFFF;
+    
+    for (let i = 0; i < payload.length; i++) {
+        crc ^= (payload.charCodeAt(i) << 8);
+        for (let j = 0; j < 8; j++) {
+            if ((crc & 0x8000) !== 0) {
+                crc = (crc << 1) ^ polynomial;
+            } else {
+                crc = crc << 1;
+            }
+        }
+    }
+    
+    crc = crc & 0xFFFF;
+    return crc.toString(16).toUpperCase().padStart(4, '0');
 }
 
 // ===== GERAR QR CODE =====
 function generateQRCode(text) {
     const container = document.getElementById('pixQRCode');
     
-    // Usar API pública para gerar QR Code
-    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(text)}`;
+    // Usar API pública para gerar QR Code com melhor qualidade
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=${encodeURIComponent(text)}`;
     
     container.innerHTML = `
-        <img src="${qrCodeUrl}" alt="QR Code PIX" />
-        <p style="color: var(--primary); font-size: 0.9rem; margin-top: 1rem;">
-            Valor: R$ ${orderData.total.toFixed(2)}
-        </p>
+        <div style="text-align: center; padding: 2rem; background: white; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.1);">
+            <h3 style="color: #1e293b; margin-bottom: 1rem; font-size: 1.2rem;">
+                📱 Escaneie com seu celular
+            </h3>
+            <div style="background: white; padding: 1rem; border-radius: 8px; display: inline-block;">
+                <img src="${qrCodeUrl}" alt="QR Code PIX" style="display: block; max-width: 100%;" />
+            </div>
+            <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(16, 185, 129, 0.1); border-radius: 8px;">
+                <p style="color: #10b981; font-weight: 600; font-size: 1.1rem; margin: 0;">
+                    💰 Valor: R$ ${orderData.total.toFixed(2)}
+                </p>
+                <p style="color: #64748b; font-size: 0.9rem; margin: 0.5rem 0 0 0;">
+                    Abra o app do seu banco e escaneie o QR Code acima
+                </p>
+            </div>
+        </div>
     `;
 }
 
@@ -391,322 +428,9 @@ setTimeout(function() {
     }
 }, 2000);
 
-// ===== LEITOR DE QR CODE VIA CÂMERA =====
-function openQRScanner() {
-    // Criar modal do scanner
-    const scannerModal = document.createElement('div');
-    scannerModal.id = 'qrScannerModal';
-    scannerModal.innerHTML = `
-        <div class="qr-scanner-overlay">
-            <div class="qr-scanner-container">
-                <div class="qr-scanner-header">
-                    <h3>📷 Escanear QR Code PIX</h3>
-                    <button onclick="closeQRScanner()" class="close-scanner">✕</button>
-                </div>
-                <div class="qr-scanner-body">
-                    <video id="qrVideo" autoplay playsinline></video>
-                    <div class="scanner-overlay">
-                        <div class="scanner-frame"></div>
-                    </div>
-                    <p class="scanner-instructions">
-                        Posicione o QR Code do PIX dentro do quadrado
-                    </p>
-                </div>
-                <div class="qr-scanner-footer">
-                    <button onclick="switchCamera()" class="btn-switch-camera">🔄 Trocar Câmera</button>
-                </div>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(scannerModal);
-
-    // Adicionar estilos
-    addScannerStyles();
-
-    // Iniciar scanner
-    startQRScanner();
-}
-
-function closeQRScanner() {
-    if (qrScanner) {
-        qrScanner.stop();
-        qrScanner = null;
-    }
-    const modal = document.getElementById('qrScannerModal');
-    if (modal) {
-        modal.remove();
-    }
-}
-
-let currentCamera = 'environment'; // 'user' para frontal, 'environment' para traseira
-
-function switchCamera() {
-    currentCamera = currentCamera === 'environment' ? 'user' : 'environment';
-    if (qrScanner) {
-        qrScanner.stop();
-    }
-    startQRScanner();
-}
-
-function startQRScanner() {
-    const video = document.getElementById('qrVideo');
-    
-    if (!video) return;
-
-    // Configurar câmera
-    const constraints = {
-        video: {
-            facingMode: currentCamera,
-            width: { ideal: 1280 },
-            height: { ideal: 720 }
-        }
-    };
-
-    navigator.mediaDevices.getUserMedia(constraints)
-        .then(stream => {
-            video.srcObject = stream;
-            video.setAttribute('playsinline', true);
-            video.play();
-
-            // Iniciar detecção
-            requestAnimationFrame(scanQRCode);
-        })
-        .catch(err => {
-            console.error('Erro ao acessar câmera:', err);
-            alert('Não foi possível acessar a câmera. Verifique as permissões do navegador.');
-            closeQRScanner();
-        });
-}
-
-function scanQRCode() {
-    const video = document.getElementById('qrVideo');
-    if (!video || video.readyState !== video.HAVE_ENOUGH_DATA) {
-        requestAnimationFrame(scanQRCode);
-        return;
-    }
-
-    // Criar canvas temporário para processar frame
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    // Tentar detectar QR Code
-    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-    const code = jsQR(imageData.data, imageData.width, imageData.height);
-
-    if (code) {
-        // QR Code detectado!
-        processScannedQR(code.data);
-        closeQRScanner();
-    } else {
-        // Continuar escaneando
-        requestAnimationFrame(scanQRCode);
-    }
-}
-
-function processScannedQR(data) {
-    // Verificar se é um código PIX válido
-    if (data.startsWith('00020126')) {
-        showNotification('QR Code PIX detectado! Processando pagamento...', 'success');
-        
-        // Extrair valor do QR Code (se possível)
-        const match = data.match(/5303986540(\d+)(\d+\.\d{2})/);
-        const amount = match ? parseFloat(match[2]) : null;
-
-        // Simular pagamento
-        setTimeout(() => {
-            if (confirm(`Confirmar pagamento de R$ ${amount ? amount.toFixed(2) : orderData.total.toFixed(2)} via PIX?`)) {
-                processPayment('pix', { 
-                    transactionId: 'QR-' + Date.now(),
-                    qrCode: data,
-                    scannedAmount: amount
-                });
-            }
-        }, 1000);
-    } else {
-        showNotification('QR Code inválido. Por favor, escaneie um código PIX válido.', 'error');
-    }
-}
-
-function addScannerStyles() {
-    if (document.getElementById('qrScannerStyles')) return;
-
-    const styles = document.createElement('style');
-    styles.id = 'qrScannerStyles';
-    styles.textContent = `
-        .qr-scanner-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.95);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .qr-scanner-container {
-            background: rgba(20, 20, 35, 0.95);
-            border: 2px solid var(--primary);
-            border-radius: 16px;
-            max-width: 500px;
-            width: 90%;
-            overflow: hidden;
-            box-shadow: 0 20px 60px rgba(0, 255, 136, 0.3);
-        }
-
-        .qr-scanner-header {
-            padding: 1.5rem;
-            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(255, 0, 128, 0.1));
-            border-bottom: 1px solid var(--primary);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .qr-scanner-header h3 {
-            margin: 0;
-            color: var(--primary);
-            font-size: 1.3rem;
-        }
-
-        .close-scanner {
-            background: rgba(255, 0, 128, 0.2);
-            border: 1px solid var(--accent);
-            color: var(--accent);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            font-size: 1.5rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .close-scanner:hover {
-            background: var(--accent);
-            color: white;
-            transform: rotate(90deg);
-        }
-
-        .qr-scanner-body {
-            position: relative;
-            padding: 1rem;
-            background: #000;
-        }
-
-        #qrVideo {
-            width: 100%;
-            height: auto;
-            border-radius: 8px;
-            display: block;
-        }
-
-        .scanner-overlay {
-            position: absolute;
-            top: 1rem;
-            left: 1rem;
-            right: 1rem;
-            bottom: 3.5rem;
-            pointer-events: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .scanner-frame {
-            width: 250px;
-            height: 250px;
-            border: 3px solid var(--primary);
-            border-radius: 16px;
-            position: relative;
-            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
-            animation: scannerPulse 2s ease-in-out infinite;
-        }
-
-        .scanner-frame::before,
-        .scanner-frame::after {
-            content: '';
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            border: 3px solid var(--primary);
-        }
-
-        .scanner-frame::before {
-            top: -3px;
-            left: -3px;
-            border-right: none;
-            border-bottom: none;
-        }
-
-        .scanner-frame::after {
-            top: -3px;
-            right: -3px;
-            border-left: none;
-            border-bottom: none;
-        }
-
-        .scanner-instructions {
-            color: var(--primary);
-            text-align: center;
-            margin: 1rem 0 0.5rem 0;
-            font-size: 0.9rem;
-            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
-        }
-
-        .qr-scanner-footer {
-            padding: 1rem;
-            background: rgba(20, 20, 35, 0.8);
-            border-top: 1px solid rgba(0, 255, 136, 0.2);
-        }
-
-        .btn-switch-camera {
-            width: 100%;
-            padding: 0.8rem;
-            background: rgba(0, 255, 136, 0.1);
-            border: 1px solid var(--primary);
-            color: var(--primary);
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .btn-switch-camera:hover {
-            background: var(--primary);
-            color: #000;
-            transform: scale(1.02);
-        }
-
-        @keyframes scannerPulse {
-            0%, 100% { box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5), 0 0 20px var(--primary); }
-            50% { box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5), 0 0 40px var(--primary); }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @media (max-width: 768px) {
-            .qr-scanner-container {
-                width: 95%;
-                margin: 1rem;
-            }
-
-            .scanner-frame {
-                width: 200px;
-                height: 200px;
-            }
-        }
-    `;
-    document.head.appendChild(styles);
-}
+// ===== SCANNER DE QR CODE REMOVIDO =====
+// Sistema de scanner de câmera foi removido - cliente escaneia o QR Code gerado com o celular dele
+// O QR Code PIX é exibido na tela para o cliente escanear com o app do banco
 
 // ==========================================
 //        __
