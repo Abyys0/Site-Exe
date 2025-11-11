@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Simples - EXE CODES</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #0f172a;
+            color: white;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: #1e293b;
+            padding: 2rem;
+            border-radius: 12px;
+        }
+        button {
+            padding: 1rem 2rem;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 0.5rem;
+            width: 100%;
+        }
+        button:hover { background: #2563eb; }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            background: #0f172a;
+            border: 1px solid #3b82f6;
+            border-radius: 8px;
+            color: white;
+            margin-top: 0.5rem;
+        }
+        .hidden { display: none; }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Teste de Autenticação</h1>
+        
+        <div id="loginForm">
+            <h2>Login</h2>
+            <form onsubmit="return testLogin(event)">
+                <div class="form-group">
+                    <label>Email:</label>
+                    <input type="email" id="login-email" required>
+                </div>
+                <div class="form-group">
+                    <label>Senha:</label>
+                    <input type="password" id="login-password" required>
+                </div>
+                <button type="submit">Entrar</button>
+                <button type="button" onclick="showRegister()">Criar Conta</button>
+            </form>
+        </div>
+
+        <div id="registerForm" class="hidden">
+            <h2>Cadastro</h2>
+            <form onsubmit="return testRegister(event)">
+                <div class="form-group">
+                    <label>Nome:</label>
+                    <input type="text" id="register-name" required>
+                </div>
+                <div class="form-group">
+                    <label>Email:</label>
+                    <input type="email" id="register-email" required>
+                </div>
+                <div class="form-group">
+                    <label>Senha:</label>
+                    <input type="password" id="register-password" required>
+                </div>
+                <div class="form-group">
+                    <label>Confirmar Senha:</label>
+                    <input type="password" id="register-confirm" required>
+                </div>
+                <button type="submit">Criar Conta</button>
+                <button type="button" onclick="showLogin()">Voltar para Login</button>
+            </form>
+        </div>
+
+        <div id="result" style="margin-top: 1rem;"></div>
+        
+        <hr style="margin: 2rem 0;">
+        
+        <h3>Debug:</h3>
+        <button onclick="viewUsers()">Ver Usuários</button>
+        <button onclick="viewSession()">Ver Sessão</button>
+        <button onclick="clearAll()">Limpar Tudo</button>
+        <pre id="debug" style="background: #0f172a; padding: 1rem; border-radius: 8px; font-size: 12px; overflow-x: auto;"></pre>
+    </div>
+
+    <script>
+        console.log('🔧 Iniciando teste...');
+
+        // Storage Manager Simplificado
+        const Storage = {
+            USERS_KEY: 'execodes_users_v2',
+            SESSION_KEY: 'execodes_session_v2',
+            
+            getUsers() {
+                const data = localStorage.getItem(this.USERS_KEY);
+                return data ? JSON.parse(data) : [];
+            },
+            
+            saveUsers(users) {
+                localStorage.setItem(this.USERS_KEY, JSON.stringify(users));
+            },
+            
+            findUser(email) {
+                return this.getUsers().find(u => u.email.toLowerCase() === email.toLowerCase());
+            },
+            
+            registerUser(name, email, password) {
+                const users = this.getUsers();
+                
+                if (this.findUser(email)) {
+                    throw new Error('Email já cadastrado!');
+                }
+                
+                const newUser = {
+                    id: Date.now().toString(),
+                    email: email.toLowerCase(),
+                    name: name,
+                    password: this.hashPassword(password),
+                    createdAt: new Date().toISOString()
+                };
+                
+                users.push(newUser);
+                this.saveUsers(users);
+                console.log('✅ Usuário cadastrado:', newUser);
+                return newUser;
+            },
+            
+            validateLogin(email, password) {
+                const user = this.findUser(email);
+                if (!user) throw new Error('Usuário não encontrado!');
+                
+                if (user.password !== this.hashPassword(password)) {
+                    throw new Error('Senha incorreta!');
+                }
+                
+                return user;
+            },
+            
+            hashPassword(password) {
+                let hash = 0;
+                for (let i = 0; i < password.length; i++) {
+                    hash = ((hash << 5) - hash) + password.charCodeAt(i);
+                    hash = hash & hash;
+                }
+                return hash.toString(36);
+            },
+            
+            createSession(user) {
+                const session = {
+                    userId: user.id,
+                    email: user.email,
+                    name: user.name,
+                    createdAt: Date.now()
+                };
+                localStorage.setItem(this.SESSION_KEY, JSON.stringify(session));
+                return session;
+            },
+            
+            getSession() {
+                const data = localStorage.getItem(this.SESSION_KEY);
+                return data ? JSON.parse(data) : null;
+            },
+            
+            clearSession() {
+                localStorage.removeItem(this.SESSION_KEY);
+            }
+        };
+
+        // Funções de UI
+        function showRegister() {
+            console.log('📝 Mostrando formulário de registro');
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('registerForm').classList.remove('hidden');
+        }
+
+        function showLogin() {
+            console.log('🔑 Mostrando formulário de login');
+            document.getElementById('registerForm').classList.add('hidden');
+            document.getElementById('loginForm').classList.remove('hidden');
+        }
+
+        function showResult(message, isError = false) {
+            const result = document.getElementById('result');
+            result.innerHTML = `<p class="${isError ? 'error' : 'success'}">${message}</p>`;
+        }
+
+        function testRegister(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('register-name').value.trim();
+            const email = document.getElementById('register-email').value.trim();
+            const password = document.getElementById('register-password').value;
+            const confirm = document.getElementById('register-confirm').value;
+            
+            console.log('📝 Tentando cadastrar:', { name, email });
+            
+            if (password !== confirm) {
+                showResult('❌ Senhas não coincidem!', true);
+                return false;
+            }
+            
+            try {
+                const user = Storage.registerUser(name, email, password);
+                Storage.createSession(user);
+                showResult('✅ Cadastro realizado! Redirecionando...');
+                
+                setTimeout(() => {
+                    alert('Em produção, redirecionaria para index.html');
+                }, 1500);
+            } catch (error) {
+                console.error('❌ Erro:', error);
+                showResult('❌ ' + error.message, true);
+            }
+            
+            return false;
+        }
+
+        function testLogin(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+            
+            console.log('🔑 Tentando login:', email);
+            
+            try {
+                const user = Storage.validateLogin(email, password);
+                Storage.createSession(user);
+                showResult('✅ Login realizado! Redirecionando...');
+                
+                setTimeout(() => {
+                    alert('Em produção, redirecionaria para index.html');
+                }, 1500);
+            } catch (error) {
+                console.error('❌ Erro:', error);
+                showResult('❌ ' + error.message, true);
+            }
+            
+            return false;
+        }
+
+        function viewUsers() {
+            const users = Storage.getUsers();
+            document.getElementById('debug').textContent = 
+                'USUÁRIOS (' + users.length + '):\n' + 
+                JSON.stringify(users, null, 2);
+        }
+
+        function viewSession() {
+            const session = Storage.getSession();
+            document.getElementById('debug').textContent = 
+                'SESSÃO:\n' + 
+                JSON.stringify(session, null, 2);
+        }
+
+        function clearAll() {
+            if (confirm('Limpar TODOS os dados?')) {
+                localStorage.clear();
+                document.getElementById('debug').textContent = '✅ Tudo limpo!';
+                showResult('✅ Dados limpos!');
+            }
+        }
+
+        console.log('✅ Teste carregado!');
+        console.log('📊 Usuários cadastrados:', Storage.getUsers().length);
+    </script>
+</body>
+</html>

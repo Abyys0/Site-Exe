@@ -160,13 +160,34 @@ const StorageManager = {
 
 // Alternar entre login e cadastro
 function switchToRegister() {
-    document.getElementById('loginForm').classList.add('hidden');
-    document.getElementById('registerForm').classList.remove('hidden');
+    console.log('🔄 switchToRegister() chamada');
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    
+    console.log('Login form:', loginForm);
+    console.log('Register form:', registerForm);
+    
+    if (loginForm && registerForm) {
+        loginForm.classList.add('hidden');
+        registerForm.classList.remove('hidden');
+        console.log('✅ Formulários alternados');
+    } else {
+        console.error('❌ Formulários não encontrados!');
+    }
 }
 
 function switchToLogin() {
-    document.getElementById('registerForm').classList.add('hidden');
-    document.getElementById('loginForm').classList.remove('hidden');
+    console.log('🔄 switchToLogin() chamada');
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    
+    if (loginForm && registerForm) {
+        registerForm.classList.add('hidden');
+        loginForm.classList.remove('hidden');
+        console.log('✅ Formulários alternados');
+    } else {
+        console.error('❌ Formulários não encontrados!');
+    }
 }
 
 // Mostrar notificação
@@ -343,8 +364,8 @@ function checkAuth() {
 }
 
 // ===== ADICIONAR ESTILOS DE ANIMAÇÃO =====
-const style = document.createElement('style');
-style.textContent = `
+const authStyles = document.createElement('style');
+authStyles.textContent = `
     @keyframes slideIn {
         from {
             transform: translateX(400px);
@@ -366,12 +387,24 @@ style.textContent = `
             opacity: 0;
         }
     }
-    
-    .hidden {
-        display: none !important;
-    }
 `;
-document.head.appendChild(style);
+document.head.appendChild(authStyles);
+
+// ===== EXPORTAR FUNÇÕES GLOBALMENTE (ANTES DE QUALQUER CÓDIGO) =====
+// Isso garante que as funções estejam disponíveis para onclick no HTML
+window.handleRegister = handleRegister;
+window.handleLogin = handleLogin;
+window.switchToRegister = switchToRegister;
+window.switchToLogin = switchToLogin;
+window.logout = logout;
+window.StorageManager = StorageManager;
+
+console.log('✅ Funções globais exportadas:', {
+    handleRegister: typeof window.handleRegister,
+    handleLogin: typeof window.handleLogin,
+    switchToRegister: typeof window.switchToRegister,
+    switchToLogin: typeof window.switchToLogin
+});
 
 // ===== INICIALIZAÇÃO =====
 document.addEventListener('DOMContentLoaded', function() {
@@ -381,11 +414,3 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('%c🔐 Sistema de Autenticação EXE CODES Ativo', 'color: #3b82f6; font-size: 14px; font-weight: bold;');
     console.log('%c✓ Sistema reconstruído e otimizado', 'color: #10b981; font-size: 12px;');
 });
-
-// ===== FUNÇÕES GLOBAIS =====
-window.handleRegister = handleRegister;
-window.handleLogin = handleLogin;
-window.switchToRegister = switchToRegister;
-window.switchToLogin = switchToLogin;
-window.logout = logout;
-window.StorageManager = StorageManager;
