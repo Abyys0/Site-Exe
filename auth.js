@@ -5,25 +5,14 @@
 const StorageManager = {
     async getUsers() {
         try {
-            // Descriptografar dados do SecureStorage
+            const encrypted = localStorage.getItem('exebots_users');
+            if (!encrypted) return [];
+            
+            // Descriptografar dados
             const users = await SecureStorage.load('exebots_users');
-            
-            // Verificar se retornou dados válidos
-            if (!users || !Array.isArray(users)) {
-                console.warn('⚠️ Dados de usuários inválidos, iniciando array vazio');
-                return [];
-            }
-            
-            return users;
+            return users || [];
         } catch (error) {
             console.error('Error retrieving users:', error);
-            // Se houver erro ao carregar, limpar dados corrompidos
-            try {
-                await SecureStorage.remove('exebots_users');
-                console.log('🗑️ Dados corrompidos removidos');
-            } catch (e) {
-                console.error('Erro ao limpar dados:', e);
-            }
             return [];
         }
     },
@@ -51,7 +40,7 @@ const StorageManager = {
             const users = await this.getUsers();
             
             // Verificar se usuário já existe
-            if (users.find(u => u.email === sanitizedUser.email)) {
+            if (users.some(u => u.email === sanitizedUser.email)) {
                 throw new Error('Email já cadastrado!');
             }
 
@@ -169,13 +158,6 @@ const StorageManager = {
     async clearCurrentUser() {
         await SecureStorage.remove('exebots_session');
         SecuritySystem.logSecurityEvent('user_logout');
-    },
-
-    // Função para limpar todos os dados (debug)
-    async clearAllData() {
-        await SecureStorage.remove('exebots_users');
-        await SecureStorage.remove('exebots_session');
-        console.log('🗑️ Todos os dados foram limpos!');
     }
 };
 
@@ -684,37 +666,30 @@ function handleRegister(event) {
 }
 
 // ===== CHECK IF USER IS LOGGED IN =====
-async function checkAuth() {
-    try {
-        const currentUser = await StorageManager.getCurrentUser();
-        if (currentUser) {
-            console.log('Usuário autenticado:', currentUser);
+function checkAuth() {
+    const currentUser = StorageManager.getCurrentUser();
+    if (currentUser) {
+        // Verificar se sessão ainda é válida
+        if (!SessionManager.isSessionValid()) {
+            StorageManager.clearCurrentUser();
+            window.location.href = 'auth.html';
+            return;
         }
-    } catch (error) {
-        console.log('Nenhum usuário logado');
+        console.log('Usuário autenticado:', currentUser);
     }
 }
 
 // ===== LOGOUT FUNCTION =====
-async function logout() {
-    await StorageManager.clearCurrentUser();
+function logout() {
+    StorageManager.clearCurrentUser();
+    RateLimiter.logSecurityEvent('LOGOUT', { 
+        timestamp: Date.now()
+    });
     window.location.href = 'auth.html';
 }
 
 // ===== INICIALIZAÇÃO =====
-document.addEventListener('DOMContentLoaded', async function() {
-    // Aguardar sistema estar pronto
-    await waitForSystem();
-    
-    // CORREÇÃO TEMPORÁRIA: Limpar dados corrompidos uma vez
-    const needsReset = localStorage.getItem('auth_needs_reset');
-    if (needsReset === null) {
-        console.log('� Limpando dados antigos...');
-        await StorageManager.clearAllData();
-        localStorage.setItem('auth_needs_reset', 'false');
-        console.log('✅ Dados limpos! Você pode criar uma conta agora.');
-    }
-    
+document.addEventListener('DOMContentLoaded', function() {
     checkAuth();
     
     console.log('%c🔐 AUTH SYSTEM READY', 'color: #00ff88; font-size: 14px; font-weight: bold;');
