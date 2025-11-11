@@ -189,10 +189,21 @@ function closeCart() {
 
 async function proceedToCheckout() {
     try {
-        // Verificar se usuário está logado
-        const session = await SecureStorage.load('exebots_session');
+        console.log('🛒 Tentando ir para checkout...');
+        console.log('StorageManager disponível?', !!window.StorageManager);
         
-        if (!session || Date.now() > session.expiresAt) {
+        // Verificar se usuário está logado usando o novo sistema
+        if (!window.StorageManager) {
+            console.error('❌ StorageManager não disponível');
+            alert('Sistema não carregado. Por favor, recarregue a página.');
+            return;
+        }
+        
+        const session = StorageManager.getSession();
+        console.log('Sessão encontrada:', session);
+        
+        if (!session) {
+            console.error('❌ Nenhuma sessão ativa');
             alert('Por favor, faça login para continuar com a compra.');
             window.location.href = 'auth.html';
             return;
@@ -203,12 +214,13 @@ async function proceedToCheckout() {
             return;
         }
 
+        console.log('✅ Tudo OK! Redirecionando para checkout. Usuário:', session.name);
+        
         // Redirecionar para checkout
         window.location.href = 'checkout.html';
     } catch (error) {
-        console.error('Erro ao verificar checkout:', error);
-        alert('Erro ao processar. Por favor, faça login novamente.');
-        window.location.href = 'auth.html';
+        console.error('❌ Erro ao verificar checkout:', error);
+        alert('Erro ao processar. Por favor, tente novamente.');
     }
 }
 

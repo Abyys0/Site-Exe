@@ -21,20 +21,28 @@ let qrScanner = null;
 
 // ===== INICIALIZAÇÃO =====
 document.addEventListener('DOMContentLoaded', async function() {
+    console.log('🔄 Iniciando checkout...');
+    
     // Verificar se usuário está logado usando o novo sistema
-    if (window.StorageManager) {
-        const session = StorageManager.getSession();
-        if (!session) {
-            alert('Por favor, faça login para continuar com a compra.');
-            window.location.href = 'auth.html';
-            return;
-        }
-        console.log('✅ Usuário autenticado:', session.name);
-    } else {
-        console.error('StorageManager não carregado!');
+    if (!window.StorageManager) {
+        console.error('❌ StorageManager não carregado!');
         alert('Erro ao carregar página. Por favor, recarregue.');
         return;
     }
+    
+    console.log('✅ StorageManager disponível');
+    
+    const session = StorageManager.getSession();
+    console.log('Sessão encontrada:', session);
+    
+    if (!session) {
+        console.error('❌ Nenhuma sessão ativa');
+        alert('Por favor, faça login para continuar com a compra.');
+        window.location.href = 'auth.html';
+        return;
+    }
+    
+    console.log('✅ Usuário autenticado:', session.name);
 
     await loadOrder();
     await loadUserInfo();
